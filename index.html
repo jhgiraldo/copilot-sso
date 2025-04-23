@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <title>Copilot SSO Test</title>
+  <title>Copilot SSO Web Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
   <script src="https://alcdn.msauth.net/browser/2.32.0/js/msal-browser.min.js"></script>
@@ -30,7 +30,7 @@
     const msalInstance = new msal.PublicClientApplication({
       auth: {
         clientId,
-        authority: "https://login.microsoftonline.com/" + tenantId
+        authority: `https://login.microsoftonline.com/${tenantId}`
       },
       cache: {
         cacheLocation: "sessionStorage",
@@ -39,7 +39,7 @@
     });
 
     const loginRequest = {
-      scopes: ["User.Read", "openid", "profile"]
+      scopes: ["openid", "profile", "User.Read"]
     };
 
     async function onSignInClick() {
@@ -75,13 +75,28 @@
       document.getElementById("logout").style.display = "inline";
     }
 
-    async function fetchJSON(url, options = {}) {
-      const res = await fetch(url, {
-        ...options,
-        headers: { ...options.headers, accept: 'application/json' }
-      });
-      if (!res.ok) throw new Error(`Error al obtener JSON: ${res.status}`);
-      return res.json();
+    async function fetchJSONWithBearer(url) {
+      const tokenRequest = {
+        scopes: ["https://service.powerapps.com/.default"]
+      };
+
+      try {
+        const tokenResponse = await msalInstance.acquireTokenSilent(tokenRequest);
+        const accessToken = tokenResponse.accessToken;
+
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/json"
+          }
+        });
+
+        if (!res.ok) throw new Error(`Token endpoint error: ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error("Error al obtener el token Direct Line:", err);
+        return { token: null };
+      }
     }
 
     function getOAuthCardResourceUri(activity) {
@@ -101,7 +116,12 @@
 
     async function renderChatWidget() {
       const userID = user?.localAccountId?.substring(0, 36) || Math.random().toString(36).substring(2);
-      const { token } = await fetchJSON(tokenEndpoint);
+      const { token } = await fetchJSONWithBearer(tokenEndpoint);
+      if (!token) {
+        console.error("No se pudo obtener el token del bot.");
+        return;
+      }
+
       const directLine = window.WebChat.createDirectLine({ token });
 
       const store = WebChat.createStore({}, ({ dispatch }) => next => action => {
