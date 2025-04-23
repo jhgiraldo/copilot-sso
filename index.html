@@ -23,9 +23,9 @@
   <div id="webchat"></div>
 
   <script>
-    const clientId = "95f8f362-b44c-4b6d-84aa-ce37fd251c04";
-    const tenantId = "c7ed5557-a5c8-4435-9fab-ada7abcdc01b";
-    const tokenEndpoint = "https://1e256ba4f2f8ec3ca82251b8b111f2.4a.environment.api.powerplatform.com/powervirtualagents/botsbyschema/cr5e6_agente/directline/token?api-version=2022-03-01-preview";
+    const clientId = "e628e78d-0e45-4be2-ac61-7c7facc5b141";
+    const tenantId = "959d9200-12be-4937-9ff4-a42df3cd2427";
+    const tokenEndpoint = "https://123bc2e1cb17ee44b248fa57329dc5.48.environment.api.powerplatform.com/powervirtualagents/botsbyschema/crcf9_asistenteHavas/directline/token?api-version=2022-03-01-preview";
 
     const msalInstance = new msal.PublicClientApplication({
       auth: {
@@ -77,7 +77,7 @@
 
     async function fetchJSONWithBearer(url) {
       const tokenRequest = {
-      scopes: ["api://95f8f362-b44c-4b6d-84aa-ce37fd251c04/access_as_user"]
+        scopes: ["api://e628e78d-0e45-4be2-ac61-7c7facc5b141/access_as_user"]
       };
 
       try {
@@ -94,7 +94,7 @@
         if (!res.ok) throw new Error(`Token endpoint error: ${res.status}`);
         return await res.json();
       } catch (err) {
-        console.error("Error al obtener el token Direct Line:", err);
+        console.error("Error al obtener el token del bot:", err);
         return { token: null };
       }
     }
